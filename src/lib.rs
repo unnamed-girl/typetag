@@ -345,7 +345,7 @@ pub trait Deserialize {}
 impl<T> Deserialize for T {}
 
 pub trait TypetagName {
-    fn typetag_name() -> &'static str;
+    const TYPETAG_NAME: &'static str;
 }
 
 // Not public API. Used by generated code.

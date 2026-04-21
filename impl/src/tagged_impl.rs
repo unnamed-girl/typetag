@@ -97,7 +97,7 @@ fn augment_impl_generic(input: &mut ItemImpl, mode: Mode) {
         input.items.push(parse_quote! {
             #[doc(hidden)]
             fn typetag_name(&self) -> &'static str {
-                <Self as typetag::TypetagName>::typetag_name()
+                <Self as typetag::TypetagName>::TYPETAG_NAME
             }
         });
 

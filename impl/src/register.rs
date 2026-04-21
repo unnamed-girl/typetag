@@ -12,12 +12,12 @@ pub(crate) fn expand(args: RegisterArgs) -> TokenStream {
     expanded.extend(quote! {
         typetag::__private::inventory::submit! {
             <dyn #trait_ty>::typetag_register(
-                <#impl_ty as typetag::TypetagName>::typetag_name(),
+                <#impl_ty as typetag::TypetagName>::TYPETAG_NAME,
                 (|deserializer| typetag::__private::Result::Ok(
                     typetag::__private::Box::new(
                         typetag::__private::erased_serde::deserialize::<#impl_ty>(deserializer)?
                     ),
-                )) as typetag::__private::DeserializeFn<dyn #trait_ty>,
+                )) as typetag::__private::DeserializeFn<<dyn #trait_ty as typetag::__private::Strictest>::Object>,
             )
         }
     });

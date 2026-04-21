@@ -488,6 +488,7 @@ mod generic_impl {
     use std::fmt::Debug;
 
     use serde::{Deserialize, Serialize};
+    use typetag::TypetagName;
 
     #[typetag::serde]
     trait Trait: Debug {}
@@ -497,22 +498,32 @@ mod generic_impl {
         v: T,
     }
 
-    #[typetag::serde]
-    impl Trait for Struct<i8> {}
+    impl TypetagName for Struct<i32> {
+        const TYPETAG_NAME: &'static str = "Struct<i32>";
+    }
+
+    impl TypetagName for Struct<bool> {
+        const TYPETAG_NAME: &'static str = "Struct<bool>";
+    }
+
+    impl TypetagName for Struct<i8> {
+        const TYPETAG_NAME: &'static str = "Struct<i8>";
+    }
 
     #[typetag::serde]
     impl<T: Debug + Serialize> Trait for Struct<T> {}
 
-    typetag::register!(Trait, Struct<String>);
+    typetag::register!(Trait, Struct<i32>);
+    typetag::register!(Trait, Struct<i8>);
     typetag::register!(Trait, Struct<bool>);
 
     #[test]
     fn test_json_serialize() {
         let trait_object = &Struct {
-            v: "value".to_string(),
+            v: 5,
         } as &dyn Trait;
         let json = serde_json::to_string(trait_object).unwrap();
-        let expected = r#"{"Struct<String>":{"v":"value"}}"#;
+        let expected = r#"{"Struct<i32>":{"v":5}}"#;
         assert_eq!(json, expected);
 
         let trait_object = &Struct { v: false } as &dyn Trait;
@@ -528,10 +539,10 @@ mod generic_impl {
 
     #[test]
     fn test_json_deserialize() {
-        let json = r#"{"Struct<String>":{"v":"value"}}"#;
+        let json = r#"{"Struct<i8>":{"v":5}}"#;
         let trait_object: Box<dyn Trait> = serde_json::from_str(json).unwrap();
         let debug_str = format!("{:?}", &trait_object);
-        let expected = r#"Struct { v: "value" }"#;
+        let expected = r#"Struct { v: 5 }"#;
         assert_eq!(debug_str, expected);
 
         let json = r#"{"Struct<bool>":{"v":false}}"#;
@@ -611,15 +622,11 @@ mod tag_mismatch {
     impl<T: Serialize> Trait for Tagged<T> {}
 
     impl TypetagName for Tagged<&'_ str> {
-        fn typetag_name() -> &'static str {
-            "Tagged"
-        }
+        const TYPETAG_NAME: &'static str = "Tagged";
     }
 
     impl TypetagName for Tagged<bool> {
-        fn typetag_name() -> &'static str {
-            "Tagged"
-        }
+        const TYPETAG_NAME: &'static str = "Tagged";
     }
 
     #[test]
